@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>TJM - Premium System</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+<div id="login-screen" class="login-overlay">
+    <div class="login-box">
+        <div class="lock-circle"><i data-lucide="lock"></i></div>
+        <h3>TIRTA JAYA MANDIRI</h3>
+        <p>Silakan masukkan PIN akses</p>
+        <input type="password" id="pinInput" inputmode="numeric" maxlength="4" placeholder="••••">
+        <button id="btnLogin">Buka Sistem</button>
+        <p id="loginError" style="color: #ff3b30; display: none; margin-top: 15px; font-size: 13px;">PIN Salah!</p>
+    </div>
+</div>
+
+<div class="app-container">
+    <nav class="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <i data-lucide="droplet"></i>
+            <span>TJM <b>PRO</b></span>
+        </div>
+    </div>
+    <div class="nav-links">
+        <div class="nav-item active" onclick="location.reload()">
+            <i data-lucide="layout-grid"></i>
+            <span>Beranda</span>
+        </div>
+        <div class="nav-item" id="btnBackup">
+            <i data-lucide="download"></i>
+            <span>Simpan</span>
+        </div>
+        <div class="nav-item" id="btnRestore">
+            <i data-lucide="upload"></i>
+            <span>Muat</span>
+        </div>
+        <div class="nav-item logout" onclick="sessionStorage.clear(); location.reload();">
+            <i data-lucide="log-out"></i>
+            <span>Keluar</span>
+        </div>
+    </div>
+</nav>
+
+    <main class="content">
+        <header class="main-header">
+            <div class="search-group">
+                <div class="search-bar">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="globalSearch" placeholder="Cari nama pelanggan...">
+                </div>
+                <select id="filterAlamat" class="ios-select">
+                    <option value="">Semua Wilayah</option>
+                    <option value="Kp. Parung Cabok">Parung Cabok</option>
+                    <option value="Kp. Nangewer">Nangewer</option>
+                    <option value="Kp. Cikored">Cikored</option>
+                    <option value="Kp. Cirawa">Cirawa</option>
+                    <option value="Kp. Nyalindung">Nyalindung</option>
+                    <option value="Kp. Cikawini">Cikawini</option>
+                    <option value="Kp. Pasir Suren">Pasir Suren</option>
+                    <option value="Kp. Cikananga">Cikananga</option>
+                </select>
+            </div>
+            <button id="btnPrint" class="btn-print"><i data-lucide="printer"></i> PDF</button>
+        </header>
+
+        <section class="top-stats">
+            <div class="stat-box blue">
+                <small>Total Pelanggan</small>
+                <h2 id="statTotal">0</h2>
+            </div>
+            <div class="stat-box purple">
+                <small>Omzet Wilayah</small>
+                <h2 id="statRupiah">Rp 0</h2>
+            </div>
+        </section>
+
+        <div class="dashboard-grid">
+            <section class="glass-card">
+                <div class="card-head"><h3>Input Penagihan</h3></div>
+                <div class="form-grid">
+                    <div class="field"><label>Nama Pelanggan</label><input type="text" id="nama" placeholder="Nama"></div>
+                    <div class="field"><label>No. Sambungan</label><input type="text" id="noSambung" placeholder="000xxx"></div>
+                    <div class="field">
+                        <label>Alamat</label>
+                        <select id="alamat">
+                            <option value="" disabled selected>Pilih Alamat</option>
+                            <option value="Kp. Parung Cabok">Kp. Parung Cabok</option>
+                            <option value="Kp. Nangewer">Kp. Nangewer</option>
+                            <option value="Kp. Cikored">Kp. Cikored</option>
+                            <option value="Kp. Cirawa">Kp. Cirawa</option>
+                            <option value="Kp. Nyalindung">Kp. Nyalindung</option>
+                            <option value="Kp. Cikawini">Kp. Cikawini</option>
+                            <option value="Kp. Pasir Suren">Kp. Pasir Suren</option>
+                            <option value="Kp. Cikananga">Kp. Cikananga</option>
+                        </select>
+                    </div>
+                    <div class="field"><label>WhatsApp</label><input type="tel" id="wa" placeholder="628xxx"></div>
+                    <div class="field full">
+                        <label>Pilih Bulan</label>
+                        <select id="bulan" multiple class="multi-select"></select>
+                    </div>
+                </div>
+                <div id="priceList"></div>
+                <button id="btnSubmit" class="btn-submit">Simpan ke Database</button>
+            </section>
+
+            <div class="right-stack">
+                <section class="glass-card">
+                    <div class="card-head"><h3>Ranking Penunggak</h3></div>
+                    <div id="rankingList"></div>
+                </section>
+                <section class="glass-card">
+                    <div class="card-head"><h3>Grafik Pendapatan</h3></div>
+                    <canvas id="mainChart"></canvas>
+                </section>
+            </div>
+        </div>
+
+        <section class="glass-card table-section">
+            <div class="card-head" style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>Riwayat Data</h3>
+                <label class="toggle"><input type="checkbox" id="hideLunas"> <span>Sembunyikan Lunas</span></label>
+            </div>
+            <div class="scroll-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>Pelanggan</th><th>Alamat</th><th>Periode</th><th>Total</th><th>Status</th><th>Aksi</th></tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="receipt-template" style="position: absolute; left: -9999px;">
+    <div id="receipt-content" style="width: 350px; background: white; padding: 30px; font-family: 'Courier New', monospace; color: black;">
+        <center>
+            <h3 style="margin:0;">PERUMDA AIR MINUM</h3>
+            <h2 style="margin:0;">TIRTA JAYA MANDIRI</h2>
+            <hr style="border:0; border-top:1px dashed #000; margin:15px 0;">
+        </center>
+        <div style="font-size: 13px;">
+            <p>NAMA: <b id="rec-nama"></b></p>
+            <p>NO SBG: <b id="rec-no"></b></p>
+            <p>ALAMAT: <b id="rec-alamat"></b></p>
+            <p>BULAN: <b id="rec-bulan"></b></p>
+            <hr style="border:0; border-top:1px dashed #000; margin:15px 0;">
+            <center>
+                <small>TOTAL TAGIHAN</small><br>
+                <b style="font-size: 20px;" id="rec-total"></b><br><br>
+                <div id="rec-status" style="border:1px solid #000; padding:5px 10px; display:inline-block;"></div>
+            </center>
+        </div>
+    </div>
+</div>
+
+<input type="file" id="fileInput" style="display:none" accept=".json">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
