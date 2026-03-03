@@ -217,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         doc.setFontSize(16);
-        doc.text("LAPORAN TAGIHAN LUNAS - PERUMDA TJM", 14, 15);
+        doc.text("LAPORAN TAGIHAN - MAIDI SUJANA PRATAMA", 14, 15);
         
         const rows = dataLunas.map((d, i) => [
             i + 1, 
