@@ -67,3 +67,13 @@ td { padding: 18px 15px; border-bottom: 1px solid #f2f2f7; font-size: 14px; }
     .top-stats, .dashboard-grid, .form-grid { grid-template-columns: 1fr; }
     .field.full { grid-column: span 1; }
 }
+.multi-select {
+    height: 120px; /* Memberi ruang untuk melihat beberapa pilihan sekaligus */
+    padding: 10px !important;
+}
+/* Efek saat tombol ditekan */
+.btn-submit:active, #btnLogin:active, .btn-print:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+    transition: transform 0.1s;
+}
