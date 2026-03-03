@@ -1,8 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
     lucide.createIcons();
-    const APP_PIN = "1234";
+    const APP_PIN = "1234"; 
     let editIndex = null;
+    let db = JSON.parse(localStorage.getItem("tjm_final_pro") || "[]");
+    let chartObj = null;
 
+    // --- SISTEM LOGIN ---
     if (sessionStorage.getItem("isLoggedIn") === "true") {
         document.getElementById("login-screen").style.display = "none";
     }
@@ -10,16 +13,14 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btnLogin").onclick = () => {
         if (document.getElementById("pinInput").value === APP_PIN) {
             sessionStorage.setItem("isLoggedIn", "true");
-            location.reload();
+            location.reload(); 
         } else {
             document.getElementById("loginError").style.display = "block";
             document.getElementById("pinInput").value = "";
         }
     };
 
-    let db = JSON.parse(localStorage.getItem("tjm_final_pro") || "[]");
-    let chartObj = null;
-
+    // --- DOM ELEMENTS ---
     const dom = {
         table: document.getElementById("tableBody"),
         monthSelect: document.getElementById("bulan"),
@@ -33,14 +34,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
+    // --- UTILS ---
     const formatIDR = (v) => v.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     const cleanNum = (v) => parseInt(v.replace(/\./g, "")) || 0;
 
+    // --- INISIALISASI FORM ---
     const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
     [2025, 2026].forEach(y => {
-        const group = document.createElement("optgroup"); group.label = y;
+        const group = document.createElement("optgroup"); 
+        group.label = y;
         months.forEach(m => {
-            const opt = document.createElement("option"); opt.value = `${m} ${y}`; opt.innerText = `${m} ${y}`;
+            const opt = document.createElement("option"); 
+            opt.value = `${m} ${y}`; 
+            opt.innerText = `${m} ${y}`;
             group.appendChild(opt);
         });
         dom.monthSelect.appendChild(group);
@@ -57,6 +63,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
+    const resetForm = () => {
+        Object.values(dom.inputs).forEach(input => input.value = "");
+        dom.monthSelect.querySelectorAll('option').forEach(opt => opt.selected = false);
+        dom.priceList.innerHTML = "";
+        editIndex = null;
+        dom.btnSubmit.innerText = "Simpan ke Database";
+        dom.btnSubmit.style.background = "var(--blue)";
+    };
+
+    // --- RENDER ENGINE ---
     const render = () => {
         dom.table.innerHTML = "";
         const search = document.getElementById("globalSearch").value.toLowerCase();
@@ -68,6 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (hidePaid && item.lunas) return;
             if (search && !item.nama.toLowerCase().includes(search)) return;
             if (filter && item.alamat !== filter) return;
+            
             totalVal += item.total;
             const tr = document.createElement("tr");
             tr.innerHTML = `
@@ -86,6 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </td>`;
             dom.table.appendChild(tr);
         });
+        
         lucide.createIcons();
         document.getElementById("statTotal").innerText = db.length;
         document.getElementById("statRupiah").innerText = "Rp " + totalVal.toLocaleString('id-ID');
@@ -104,11 +122,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
+    // --- ACTIONS ---
     window.actions = {
         edit: (i) => {
-            editIndex = i; const data = db[i];
-            dom.inputs.nama.value = data.nama; dom.inputs.no.value = data.no;
-            dom.inputs.alamat.value = data.alamat; dom.inputs.wa.value = data.wa;
+            editIndex = i; 
+            const data = db[i];
+            dom.inputs.nama.value = data.nama; 
+            dom.inputs.no.value = data.no;
+            dom.inputs.alamat.value = data.alamat; 
+            dom.inputs.wa.value = data.wa;
             Array.from(dom.monthSelect.options).forEach(opt => opt.selected = data.bulan.includes(opt.value));
             dom.monthSelect.onchange();
             setTimeout(() => {
@@ -117,6 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             }, 50);
             dom.btnSubmit.innerText = "Perbarui Data";
+            dom.btnSubmit.style.background = "#ff9500";
             window.scrollTo({top: 0, behavior: 'smooth'});
         },
         del: (i) => { if(confirm("Hapus?")) { db.splice(i,1); save(); } },
@@ -145,30 +168,75 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    const save = () => { localStorage.setItem("tjm_final_pro", JSON.stringify(db)); render(); };
+    const save = () => { 
+        localStorage.setItem("tjm_final_pro", JSON.stringify(db)); 
+        render(); 
+    };
 
+    // --- CORE LOGIC ---
     dom.btnSubmit.onclick = () => {
         const pInp = document.querySelectorAll(".m-price");
         if(!dom.inputs.nama.value || pInp.length === 0) return alert("Lengkapi data!");
+        
         let total = 0, priceMap = {}, bulanArr = [];
         pInp.forEach(inp => {
             const v = cleanNum(inp.value);
             priceMap[inp.dataset.m] = v; total += v; bulanArr.push(inp.dataset.m);
         });
-        const newData = { ...Object.fromEntries(Object.entries(dom.inputs).map(([k,v])=>[k,v.value])), bulan: bulanArr, priceMap, total, lunas: editIndex !== null ? db[editIndex].lunas : false };
-        if(editIndex !== null) { db[editIndex] = newData; editIndex = null; dom.btnSubmit.innerText = "Simpan ke Database"; }
-        else { db.push(newData); }
+
+        const newData = { 
+            nama: dom.inputs.nama.value,
+            no: dom.inputs.no.value,
+            alamat: dom.inputs.alamat.value,
+            wa: dom.inputs.wa.value,
+            bulan: bulanArr, 
+            priceMap, 
+            total, 
+            lunas: editIndex !== null ? db[editIndex].lunas : false 
+        };
+
+        if(editIndex !== null) { 
+            db[editIndex] = newData; 
+        } else { 
+            db.push(newData); 
+        }
+        
         save();
-        location.reload();
+        resetForm();
     };
 
+    // --- EKSPOR PDF (KHUSUS LUNAS) ---
     document.getElementById("btnPrint").onclick = () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('l', 'mm', 'a4');
-        doc.text("LAPORAN TAGIHAN PERUMDA TJM", 14, 15);
-        const rows = db.map((d, i) => [i + 1, d.nama, d.no, d.alamat, d.bulan.join(", "), `Rp ${d.total.toLocaleString('id-ID')}`, d.lunas ? "LUNAS" : "BELUM"]);
-        doc.autoTable({ head: [['No', 'Pelanggan', 'No SBG', 'Alamat', 'Periode', 'Total', 'Status']], body: rows, startY: 25 });
-        doc.save("Laporan_TJM.pdf");
+        
+        const dataLunas = db.filter(d => d.lunas === true);
+        
+        if (dataLunas.length === 0) {
+            return alert("Tidak ada data lunas untuk dicetak!");
+        }
+
+        doc.setFontSize(16);
+        doc.text("LAPORAN TAGIHAN LUNAS - PERUMDA TJM", 14, 15);
+        
+        const rows = dataLunas.map((d, i) => [
+            i + 1, 
+            d.nama, 
+            d.no, 
+            d.alamat, 
+            d.bulan.join(", "), 
+            `Rp ${d.total.toLocaleString('id-ID')}`, 
+            "LUNAS"
+        ]);
+
+        doc.autoTable({ 
+            head: [['No', 'Pelanggan', 'No SBG', 'Alamat', 'Periode', 'Total', 'Status']], 
+            body: rows, 
+            startY: 25,
+            headStyles: { fillColor: [52, 199, 89] } 
+        });
+        
+        doc.save(`Laporan_Lunas_${new Date().toISOString().slice(0,10)}.pdf`);
     };
 
     const updateChart = () => {
@@ -182,6 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
+    // --- BACKUP & RESTORE ---
     document.getElementById("btnBackup").onclick = () => {
         const a = document.createElement("a");
         a.href = URL.createObjectURL(new Blob([JSON.stringify(db)], {type:"application/json"}));
@@ -195,6 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.readAsText(e.target.files[0]);
     };
 
+    // --- LISTENERS ---
     document.getElementById("globalSearch").oninput = render;
     document.getElementById("hideLunas").onchange = render;
     document.getElementById("filterAlamat").onchange = render;
