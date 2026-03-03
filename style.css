@@ -67,9 +67,18 @@ td { padding: 18px 15px; border-bottom: 1px solid #f2f2f7; font-size: 14px; }
     .top-stats, .dashboard-grid, .form-grid { grid-template-columns: 1fr; }
     .field.full { grid-column: span 1; }
 }
+/* Mempercantik kotak pilihan bulan */
 .multi-select {
-    height: 120px; /* Memberi ruang untuk melihat beberapa pilihan sekaligus */
+    height: 120px; 
     padding: 10px !important;
+    cursor: pointer;
+}
+
+/* Memberi jarak antar opsi di dalam select */
+.multi-select option {
+    padding: 8px;
+    border-radius: 8px;
+    margin-bottom: 2px;
 }
 /* Efek saat tombol ditekan */
 .btn-submit:active, #btnLogin:active, .btn-print:active {
