@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
         dom.priceList.innerHTML = "";
         Array.from(dom.monthSelect.selectedOptions).forEach(opt => {
             const div = document.createElement("div");
-            div.style = "display:flex; justify-content:space-between; align-items:center; padding:10px; background:#f2f2f7; border-radius:10px; margin-top:5px;";
+            div.style = "display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f2f2f7; border-radius:12px; margin-top:8px;";
             div.innerHTML = `<span>${opt.value}</span><input type="text" class="m-price" data-m="${opt.value}" placeholder="Rp 0" style="width:120px; text-align:right; border:none; background:transparent; font-weight:bold; outline:none;">`;
             dom.priceList.appendChild(div);
             div.querySelector('input').oninput = (e) => e.target.value = formatIDR(e.target.value);
@@ -71,13 +71,13 @@ document.addEventListener("DOMContentLoaded", () => {
             totalVal += item.total;
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td><b>${item.nama}</b><br><small>${item.no}</small></td>
+                <td><b>${item.nama}</b><br><small style="color:#8e8e93">${item.no}</small></td>
                 <td>${item.alamat}</td>
                 <td><small>${item.bulan.join(", ")}</small></td>
                 <td><b>Rp ${item.total.toLocaleString('id-ID')}</b></td>
                 <td><span class="badge ${item.lunas ? 'lunas' : 'belum'}">${item.lunas ? 'Lunas' : 'Belum'}</span></td>
                 <td>
-                    <div style="display:flex; gap:12px; color:var(--blue)">
+                    <div style="display:flex; gap:15px; color:var(--blue)">
                         <i data-lucide="edit-3" onclick="actions.edit(${idx})" style="cursor:pointer; color:#ff9500; width:18px"></i>
                         <i data-lucide="image" onclick="actions.share(${idx})" style="cursor:pointer; width:18px"></i>
                         <i data-lucide="check-circle" onclick="actions.pay(${idx})" style="cursor:pointer; width:18px"></i>
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
         db.filter(d => !d.lunas).sort((a,b) => b.total - a.total).slice(0, 5).forEach((d, i) => {
             const div = document.createElement("div");
             div.className = "ranking-item";
-            div.innerHTML = `<div style="display:flex; align-items:center"><div class="rank-badge">${i+1}</div><div><b>${d.nama}</b><small style="display:block; color:#8e8e93">${d.bulan.length} Bulan</small></div></div><div style="color:#ff3b30; font-weight:bold;">Rp ${d.total.toLocaleString('id-ID')}</div>`;
+            div.innerHTML = `<div style="display:flex; align-items:center"><div style="width:28px; height:28px; background:#ff3b30; color:white; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:bold; margin-right:12px; font-size:12px">${i+1}</div><div><b>${d.nama}</b><small style="display:block; color:#8e8e93">${d.bulan.length} Bulan</small></div></div><div style="color:#ff3b30; font-weight:bold;">Rp ${d.total.toLocaleString('id-ID')}</div>`;
             list.appendChild(div);
         });
     };
@@ -123,17 +123,25 @@ document.addEventListener("DOMContentLoaded", () => {
         pay: (i) => { db[i].lunas = !db[i].lunas; save(); },
         share: async (i) => {
             const d = db[i];
-            document.getElementById("rec-nama").innerText = d.nama;
+            const badge = document.getElementById("rec-status-badge");
+            document.getElementById("rec-nama").innerText = d.nama.toUpperCase();
             document.getElementById("rec-no").innerText = d.no;
             document.getElementById("rec-alamat").innerText = d.alamat;
             document.getElementById("rec-bulan").innerText = d.bulan.join(", ");
             document.getElementById("rec-total").innerText = "Rp " + d.total.toLocaleString('id-ID');
-            document.getElementById("rec-status").innerText = d.lunas ? "LUNAS" : "BELUM BAYAR";
-            const canvas = await html2canvas(document.getElementById("receipt-content"), { scale: 2 });
+            document.getElementById("rec-date").innerText = "Waktu Cetak: " + new Date().toLocaleString('id-ID');
+
+            if (d.lunas) {
+                badge.innerText = "✓ LUNAS TERBAYAR"; badge.style.background = "#e4f9eb"; badge.style.color = "#28a745";
+            } else {
+                badge.innerText = "⚠ MENUNGGU PEMBAYARAN"; badge.style.background = "#fff2f2"; badge.style.color = "#dc3545";
+            }
+
+            const canvas = await html2canvas(document.getElementById("receipt-content"), { scale: 3, backgroundColor: null });
             canvas.toBlob(blob => {
-                const file = new File([blob], "Struk.png", {type:"image/png"});
-                if(navigator.share) navigator.share({ files: [file] });
-            });
+                const file = new File([blob], `Struk_${d.nama}.png`, { type: "image/png" });
+                if (navigator.share) navigator.share({ files: [file] });
+            }, "image/png");
         }
     };
 
@@ -157,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btnPrint").onclick = () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('l', 'mm', 'a4');
-        doc.text("LAPORAN TAGIHAN TJM", 14, 15);
+        doc.text("LAPORAN TAGIHAN PERUMDA TJM", 14, 15);
         const rows = db.map((d, i) => [i + 1, d.nama, d.no, d.alamat, d.bulan.join(", "), `Rp ${d.total.toLocaleString('id-ID')}`, d.lunas ? "LUNAS" : "BELUM"]);
         doc.autoTable({ head: [['No', 'Pelanggan', 'No SBG', 'Alamat', 'Periode', 'Total', 'Status']], body: rows, startY: 25 });
         doc.save("Laporan_TJM.pdf");

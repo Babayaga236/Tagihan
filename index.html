@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>TJM - Premium System</title>
+    <title>TJM PRO - Premium Management</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -25,31 +25,27 @@
 
 <div class="app-container">
     <nav class="sidebar">
-    <div class="sidebar-header">
-        <div class="logo">
-            <i data-lucide="droplet"></i>
-            <span>TJM <b>PRO</b></span>
+        <div class="sidebar-header">
+            <div class="logo">
+                <i data-lucide="droplet"></i>
+                <span>TJM <b>PRO</b></span>
+            </div>
         </div>
-    </div>
-    <div class="nav-links">
-        <div class="nav-item active" onclick="location.reload()">
-            <i data-lucide="layout-grid"></i>
-            <span>Beranda</span>
+        <div class="nav-links">
+            <div class="nav-item active" onclick="location.reload()">
+                <i data-lucide="layout-grid"></i><span>Beranda</span>
+            </div>
+            <div class="nav-item" id="btnBackup">
+                <i data-lucide="download"></i><span>Simpan</span>
+            </div>
+            <div class="nav-item" id="btnRestore">
+                <i data-lucide="upload"></i><span>Muat</span>
+            </div>
+            <div class="nav-item logout" onclick="sessionStorage.clear(); location.reload();">
+                <i data-lucide="log-out"></i><span>Keluar</span>
+            </div>
         </div>
-        <div class="nav-item" id="btnBackup">
-            <i data-lucide="download"></i>
-            <span>Simpan</span>
-        </div>
-        <div class="nav-item" id="btnRestore">
-            <i data-lucide="upload"></i>
-            <span>Muat</span>
-        </div>
-        <div class="nav-item logout" onclick="sessionStorage.clear(); location.reload();">
-            <i data-lucide="log-out"></i>
-            <span>Keluar</span>
-        </div>
-    </div>
-</nav>
+    </nav>
 
     <main class="content">
         <header class="main-header">
@@ -91,7 +87,7 @@
                     <div class="field"><label>Nama Pelanggan</label><input type="text" id="nama" placeholder="Nama"></div>
                     <div class="field"><label>No. Sambungan</label><input type="text" id="noSambung" placeholder="000xxx"></div>
                     <div class="field">
-                        <label>Alamat</label>
+                        <label>Alamat / Kampung</label>
                         <select id="alamat">
                             <option value="" disabled selected>Pilih Alamat</option>
                             <option value="Kp. Parung Cabok">Kp. Parung Cabok</option>
@@ -126,7 +122,7 @@
             </div>
         </div>
 
-        <section class="glass-card table-section">
+        <section class="glass-card">
             <div class="card-head" style="display:flex; justify-content:space-between; align-items:center;">
                 <h3>Riwayat Data</h3>
                 <label class="toggle"><input type="checkbox" id="hideLunas"> <span>Sembunyikan Lunas</span></label>
@@ -144,23 +140,49 @@
 </div>
 
 <div id="receipt-template" style="position: absolute; left: -9999px;">
-    <div id="receipt-content" style="width: 350px; background: white; padding: 30px; font-family: 'Courier New', monospace; color: black;">
-        <center>
-            <h3 style="margin:0;">PERUMDA AIR MINUM</h3>
-            <h2 style="margin:0;">TIRTA JAYA MANDIRI</h2>
-            <hr style="border:0; border-top:1px dashed #000; margin:15px 0;">
-        </center>
-        <div style="font-size: 13px;">
-            <p>NAMA: <b id="rec-nama"></b></p>
-            <p>NO SBG: <b id="rec-no"></b></p>
-            <p>ALAMAT: <b id="rec-alamat"></b></p>
-            <p>BULAN: <b id="rec-bulan"></b></p>
-            <hr style="border:0; border-top:1px dashed #000; margin:15px 0;">
-            <center>
-                <small>TOTAL TAGIHAN</small><br>
-                <b style="font-size: 20px;" id="rec-total"></b><br><br>
-                <div id="rec-status" style="border:1px solid #000; padding:5px 10px; display:inline-block;"></div>
-            </center>
+    <div id="receipt-content" style="width: 400px; background: #ffffff; padding: 0; font-family: -apple-system, sans-serif; color: #1c1c1e; border-radius: 20px; overflow: hidden; border: 1px solid #e5e5ea;">
+        
+        <div style="background: #007aff; padding: 30px 20px; text-align: center; color: white;">
+            <div style="background: white; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                <img src="logo_tjm.png" alt="Logo" style="width: 50px; height: auto; object-fit: contain;">
+            </div>
+            <h2 style="margin: 0; font-size: 16px; letter-spacing: 1px; opacity: 0.9; font-weight: 400;">PERUMDA AIR MINUM</h2>
+            <h1 style="margin: 5px 0 0; font-size: 22px; font-weight: 800;">TIRTA JAYA MANDIRI</h1>
+        </div>
+
+        <div style="padding: 30px 25px;">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <span id="rec-status-badge" style="padding: 8px 20px; border-radius: 50px; font-weight: 800; font-size: 13px; text-transform: uppercase;"></span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 15px; border-top: 1px solid #f2f2f7; border-bottom: 1px solid #f2f2f7; padding: 20px 0;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #8e8e93; font-size: 14px;">Nama Pelanggan</span>
+                    <b style="font-size: 14px;" id="rec-nama"></b>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #8e8e93; font-size: 14px;">No. Sambungan</span>
+                    <b style="font-size: 14px;" id="rec-no"></b>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #8e8e93; font-size: 14px;">Wilayah</span>
+                    <b style="font-size: 14px;" id="rec-alamat"></b>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #8e8e93; font-size: 14px;">Periode</span>
+                    <b style="font-size: 14px; text-align: right; max-width: 180px;" id="rec-bulan"></b>
+                </div>
+            </div>
+
+            <div style="margin-top: 25px; text-align: center;">
+                <small style="color: #8e8e93; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Total Tagihan</small>
+                <div style="font-size: 36px; font-weight: 900; color: #007aff; margin: 10px 0;" id="rec-total"></div>
+            </div>
+        </div>
+
+        <div style="background: #f9f9fb; padding: 20px; text-align: center; border-top: 1px dashed #e5e5ea;">
+            <p style="margin: 0; font-size: 11px; color: #8e8e93; line-height: 1.5;">Bukti pembayaran ini sah dan dihasilkan secara sistem digital.<br>Terima kasih telah membayar tepat waktu.</p>
+            <div style="margin-top: 12px; font-size: 9px; color: #c7c7cc; font-weight: bold;" id="rec-date"></div>
         </div>
     </div>
 </div>
