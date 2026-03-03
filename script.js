@@ -230,7 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ]);
 
         doc.autoTable({ 
-            head: [['No', 'Pelanggan', 'No SBG', 'Alamat', 'Periode', 'Total', 'Status']], 
+            head: [['No', 'Pelanggan', 'No Sambung', 'Alamat', 'Periode', 'Total', 'Status']], 
             body: rows, 
             startY: 25,
             headStyles: { fillColor: [52, 199, 89] } 
